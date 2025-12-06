@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<title>Collabo Drive - Discord風UI</title>
+<style>
+  body {
+    margin: 0;
+    font-family: sans-serif;
+    background: #2f3136;
+    color: #dcddde;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+  /* 左サイドバー */
+  .sidebar {
+    width: 240px;
+    background: #202225;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+  }
+  .sidebar h2 {
+    font-size: 18px;
+    margin: 0 0 10px;
+    color: #fff;
+  }
+  .file-item {
+    padding: 6px 10px;
+    background: #2f3136;
+    border-radius: 4px;
+    margin-bottom: 6px;
+    cursor: pointer;
+  }
+  .file-item:hover {
+    background: #40444b;
+  }
+
+  /* メインエリア */
+  .main {
+    flex: 1;
+    background: #36393f;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .top-bar {
+    padding: 10px;
+    background: #202225;
+    color: #fff;
+    font-weight: bold;
+  }
+
+  .content {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+  }
+
+  /* アップロードエリア */
+  .upload-box {
+    background: #2f3136;
+    padding: 20px;
+    border-radius: 8px;
+  }
+  .upload-box input {
+    margin-bottom: 10px;
+  }
+  .file-list a {
+    color: #00aff4;
+  }
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <h2>ファイル一覧</h2>
+  <div id="fileList"></div>
+</div>
+
+<div class="main">
+  <div class="top-bar">📁 Collabo Drive</div>
+  <div class="content">
+
+    <div class="upload-box">
+      <h3>アップロード</h3>
+      <input type="file" id="fileInput" />
+      <button onclick="upload()">アップロード</button>
+    </div>
+
+    <h3 style="margin-top: 20px;">ファイル一覧</h3>
+    <div class="file-list" id="fileListMain"></div>
+
+  </div>
+</div>
+
+<script>
+const API = "https://your-workers-url.workers.dev"; // 後で変更
+
+async function upload() {
+  const file = document.getElementById("fileInput").files[0];
+  if (!file) return alert("ファイル選んで！");
+
+  const form = new FormData();
+  form.append("file", file);
+
+  const res = await fetch(API + "/upload", { method: "POST", body: form });
+  const data = await res.json();
+  alert(data.message);
+
+  listFiles();
+}
+
+async function listFiles() {
+  const res = await fetch(API + "/list");
+  const data = await res.json();
+
+  const side = document.getElementById("fileList");
+  const main = document.getElementById("fileListMain");
+  side.innerHTML = "";
+  main.innerHTML = "";
+
+  data.files.forEach(f => {
+    const el = document.createElement("div");
+    el.className = "file-item";
+    el.innerHTML = f.name;
+    side.appendChild(el);
+
+    const row = document.createElement("div");
+    row.innerHTML = `📄 ${f.name} — <a href="${f.url}" target="_blank">DL</a>`;
+    main.appendChild(row);
+  });
+}
+
+listFiles();
+</script>
+</body>
+</html>
